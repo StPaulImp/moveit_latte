@@ -1,0 +1,87 @@
+1.to control arms, you should import ArmCtrl class form lubancmd.py
+
+Function:get_pose(with_timestamp=False)
+Params: with_timestamp=False, does not return timestamp
+        with_timestamp=True, return timestamp
+Return: current position,
+        if with_timestamp=True, return as a tuple (current position, timestamp)
+
+Function:get_joint(with_timestamp=False)
+Params: with_timestamp=False, does not return timestamp
+        with_timestamp=True, return timestamp
+Return: current joint,
+        if with_timestamp=True, return as a tuple (current joint, timestamp)
+
+Function:movels(pose_list, a=0.01, v=0.01, radius=0.01, t=0)
+Params: pose_list, position list, np or list type
+        a, acc (m/s2)
+        v, speed (m/s)
+        radius, blend radius (m)
+        t, execute time (s)
+
+Function:servojs(joint_list, time_list, lookaheadtime_list=None, gain_list=None, wait=False)
+Params: joint_list, joint list, no or list type
+        time_list, execete time list per step, (s)
+        lookaheadtime_list, smoothens the trajectory, range (0.03,0.2), (s)
+        gain_list, proportional gain for following target position, range (100,2000)
+        wait, False: return directly after send message, True: return until running end
+
+Function:servops(pose_list, time_list, lookaheadtime_list=None, gain_list=None, wait=False):
+Params: pose_list, position list, no or list type
+        time_list, execete time list per step, (s)
+        lookaheadtime_list, smoothens the trajectory, range (0.03,0.2), (s)
+        gain_list, proportional gain for following target position, range (100,2000)
+        wait, False: return directly after send message, True: return until running end
+
+
+Function:movepose(self, tpose, acc=0.1, vel=0.05, time=0.0, wait=True)
+Params: tpose, position
+        acc, acc
+        vel, speed
+        time, execute time
+        wait, False: return directly after send message, True: return until running end
+
+Function:is_program_running()
+Params:
+Return: Ture, running state
+        Flase, stop state
+
+Function:get_robot_serial_number()
+Params:
+Return: string: robot serial number
+
+Function:moveprocess(self, tpose, acc=0.1, vel=0.05, radius=0.0, wait=True)
+Params: tpose, position
+        acc, acc
+        vel, speed
+        radius, blend radius
+        wait, False: return directly after send message, True: return until running end
+
+Function:rt_play_start(self, sample_time_ms)
+Params: sample_time_ms, transfer interval, ms
+
+Function:rt_play_end(self)
+Params: sample_time_ms, transfer interval, ms
+
+Function:rt_play_data(self, tjoint)
+Params: tjoint, joint
+
+2.to do make, you should import LubanCmd class form lubancmd.py
+
+Function:do_make(project_name)
+Params: project_name: the project name in the scratch. such as 'do_make', 'do_clean'
+Return: 0: success
+            other: fault
+
+# restart luban system
+Function:reset()
+Params:
+Return: 
+
+# auto scan record data path, and convert record pose data to .armplay format
+Function:convert_to_armplay(folder_path, arm_type='ur', proxy_ip=None, with_graph=False)
+Params: folder_path: the path of record data
+        arm_type: support 3 types, 'ur', 'aubo', 'jaka'
+        proxy_ip: the ip of target computer
+        with_grath: whether draw the wave data after convert, it may pop a windows.
+Return: none

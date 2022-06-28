@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="8a3c4cf5-062b-4278-96ca-f7ba8971f00e" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ProjectId" id="1dWdkJ4o0pK3jUahXmFLYmcK4qw" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RunManager" selected="Python.arm_interface">
+    <configuration name="arm_interface" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="lubancmd" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/arm_interface.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="luban_cmd" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="lubancmd" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/luban_cmd.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.arm_interface" />
+        <item itemvalue="Python.luban_cmd" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8a3c4cf5-062b-4278-96ca-f7ba8971f00e" name="Default Changelist" comment="" />
+      <created>1592544924922</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1592544924922</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="1060" y="455" key="FileChooserDialogImpl" timestamp="1592561007180">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="1060" y="455" key="FileChooserDialogImpl/0.0.2560.1400@0.0.2560.1400" timestamp="1592561007180" />
+    <state width="2518" height="399" key="GridCell.Tab.0.bottom" timestamp="1594729245067">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2518" height="399" key="GridCell.Tab.0.bottom/0.0.2560.1400@0.0.2560.1400" timestamp="1594729245067" />
+    <state width="2518" height="399" key="GridCell.Tab.0.center" timestamp="1594729245067">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2518" height="399" key="GridCell.Tab.0.center/0.0.2560.1400@0.0.2560.1400" timestamp="1594729245067" />
+    <state width="2518" height="399" key="GridCell.Tab.0.left" timestamp="1594729245067">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2518" height="399" key="GridCell.Tab.0.left/0.0.2560.1400@0.0.2560.1400" timestamp="1594729245067" />
+    <state width="2518" height="399" key="GridCell.Tab.0.right" timestamp="1594729245067">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2518" height="399" key="GridCell.Tab.0.right/0.0.2560.1400@0.0.2560.1400" timestamp="1594729245067" />
+    <state x="781" y="342" key="SettingsEditor" timestamp="1592561035062">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="781" y="342" key="SettingsEditor/0.0.2560.1400@0.0.2560.1400" timestamp="1592561035062" />
+    <state x="960" y="524" key="com.intellij.ide.util.TipDialog" timestamp="1594865779967">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="960" y="524" key="com.intellij.ide.util.TipDialog/0.0.2560.1400@0.0.2560.1400" timestamp="1594865779967" />
+  </component>
+</project>
