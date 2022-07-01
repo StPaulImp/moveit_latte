@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="proxy_ip" default="169.254.53.102" doc="IP of the controller" />
+    <arg name="min_payload" default="0.0" doc="lower payload bound for the robot" />
+    <arg name="max_payload" default="3.0" doc="upper payload bound for the robot" />
+    <arg name="prefix" default="" doc="Prefix to robot's joints' and links' names" />
+    <arg name="adapter_name" default="ag_arm_1" doc="adapter_name of the controller" />
+    <!-- <arg name="planner_actuator_name" doc="planner_actuator_name of the planner" /> -->
+    <!-- <arg name="planner_client_name" doc="client_name of the planner_client_name" /> -->
+    <!-- The max_velocity parameter is only used for debugging in the ur_driver. It's not related to actual velocity limits -->
+    <arg name="max_velocity" default="10.0"/> <!-- [rad/s] -->
+
+    <node name="ur_driver" pkg="ur_robot_driver" type="driver_interface.py" output="screen">
+        <param name="min_payload" type="double" value="$(arg min_payload)"/>
+        <param name="max_payload" type="double" value="$(arg max_payload)"/>
+        <param name="max_velocity" type="double" value="$(arg max_velocity)"/>
+        <param name="prefix" type="string" value="$(arg prefix)"/>
+        <param name="proxy_ip"  type="string" value="$(arg proxy_ip)"/>
+        <param name="adapter_name"  type="string" value="$(arg adapter_name)"/>
+    </node>
+</launch>

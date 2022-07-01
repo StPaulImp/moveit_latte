@@ -15,36 +15,8 @@
   <arg name="headless_mode" default="false" doc="Automatically send URScript to robot to execute. On e-Series this does require the robot to be in 'remote-control' mode. With this, the URCap is not needed on the robot."/>
   <arg name="ur_hardware_interface_node_required" default="true" doc="Shut down ros environment if ur_hardware_interface-node dies."/>
 
-  <arg name="proxy_ip" default="169.254.53.102" doc="IP of the controller" />
-  <arg name="min_payload" default="0.1" doc="lower payload bound for the robot" />
-  <arg name="max_payload" default="3.0" doc="upper payload bound for the robot" />
-  <arg name="prefix" default="" doc="Prefix to robot's joints' and links' names" />
-  <arg name="adapter_name" default="ag_urarm_1" doc="adapter_name of the controller" />
-  <arg name="arm_actuator_name" default="arm" doc="arm_actuator_name of the controller" />
-  <!-- <arg name="gripper_actuator_name" doc="gripper_actuator_name of the controller" /> -->
-  <arg name="arm_client_name" default="client_arm_1" doc="arm_client_name of the controller" />
-  <!-- <arg name="gripper_client_name" doc="gripper_client_name of the controller" /> -->
-  <!-- <arg name="planner_actuator_name" doc="planner_actuator_name of the planner" /> -->
-  <!-- <arg name="planner_client_name" doc="client_name of the planner_client_name" /> -->
-  <!-- The max_velocity parameter is only used for debugging in the ur_driver. It's not related to actual velocity limits -->
-  <arg name="max_velocity" default="1.0"/> <!-- [rad/s] -->
-
   <include file="$(find ur_robot_driver)/launch/ur_common.launch" pass_all_args="true">
     <arg name="use_tool_communication" value="false"/>
   </include>
-
-  <node name="ur_driver" pkg="ur_robot_driver" type="driver_interface.py" output="screen">
-    <param name="min_payload" type="double" value="$(arg min_payload)"/>
-    <param name="max_payload" type="double" value="$(arg max_payload)"/>
-    <param name="max_velocity" type="double" value="$(arg max_velocity)"/>
-    <param name="prefix" type="string" value="$(arg prefix)"/>
-    <param name="proxy_ip"  type="string" value="$(arg proxy_ip)"/>
-    <param name="adapter_name"  type="string" value="$(arg adapter_name)"/>
-    <param name="arm_actuator_name" type="string"  value="$(arg arm_actuator_name)"/>
-    <!-- <param name="gripper_actuator_name" type="string" value="$(arg gripper_actuator_name)"/> -->
-    <param name="arm_client_name"  type="string" value="$(arg arm_client_name)"/>
-    <!-- <param name="gripper_client_name" type="string"  value="$(arg gripper_client_name)"/> -->
-    <!-- <param name="planner_actuator_name" type="string"  value="$(arg planner_actuator_name)" /> -->
-    <!-- <param name="planner_client_name" type="string"  value="$(arg planner_client_name)" /> -->
-  </node>
+  
 </launch>

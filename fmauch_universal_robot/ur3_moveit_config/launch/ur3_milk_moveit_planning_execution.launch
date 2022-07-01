@@ -1,0 +1,12 @@
+<launch>
+  <arg name="sim" default="false" />
+  <arg name="debug" default="false" />
+  <arg name="adapter_name" default="ag_arm_2"/>
+  <!-- Remap follow_joint_trajectory -->
+  <remap if="$(arg sim)" from="/scaled_pos_joint_traj_controller/follow_joint_trajectory" to="/pos_joint_traj_controller/follow_joint_trajectory"/>
+  <remap from="/scaled_pos_joint_traj_controller/follow_joint_trajectory" to="/$(arg adapter_name)/scaled_pos_joint_traj_controller/follow_joint_trajectory"/>
+  <!-- Launch moveit -->
+  <include file="$(find ur3_moveit_config)/launch/move_group.launch">
+    <arg name="debug" default="$(arg debug)" />
+  </include>
+</launch>

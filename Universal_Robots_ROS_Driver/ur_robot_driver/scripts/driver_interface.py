@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
-import roslib; roslib.load_manifest('ur_robot_driver')#,roslib.load_manifest('robotiq_2f_gripper_control')#,roslib.load_manifest('ag_urarm')
+# from install.lib.ur_robot_driver.scripts.lubancmd.luban_cmd import LubanCmd
+# import roslib; roslib.load_manifest('ur_robot_driver')#,roslib.load_manifest('robotiq_2f_gripper_control')#,roslib.load_manifest('ag_urarm')
 import time, sys, threading, math, os
 import copy
 import datetime
@@ -46,7 +47,7 @@ abs_file = os.path.abspath(os.path.dirname(__file__))
 print("abs_file:",abs_file)
 sys.path.append(abs_file + "/lubancmd")
 print("sys.path:",sys.path)
-from lubancmd.luban_cmd import * #ArmInterface #, GripperInterface, PoseData
+from luban_cmd import LubanCmd, ArmCtrl #ArmInterface #, GripperInterface, PoseData
 
 __author__ = "Olivier Roulet-Dubonnet"
 __copyright__ = "Copyright 2011-2015, Sintef Raufoss Manufacturing"
@@ -65,7 +66,7 @@ MIN_PAYLOAD = 0.0
 MAX_PAYLOAD = 10.0
 
 JOINT_NAMES = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint',
-               'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint', 'finger_joint']
+               'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
 
 class RobotException(Exception):
     pass
@@ -100,16 +101,17 @@ class URTrajectoryFollower(object):
         self.adapter_name = adapter_name
         self.csys = None
         self.following_lock = threading.Lock()
-        self.arm_interface_1 = None
-        self.gripper_interface_1 = None
-        self.command_gripper = None
+        self._LubanCmd = LubanCmd(host_ip=proxy_ip)
+        self._ArmCtrl = None
+
+        # self.gripper_interface_1 = None
+        # self.command_gripper = None
         # self.status = inputMsg.Robotiq2FGripper_robot_input()
-        self.arm_is_moving = False
         # self.gripper_statu_update = False
-        self.state_deadline_1 = None
-        self.state_deadline_2 = None
+        # self.state_deadline_1 = None
+        # self.state_deadline_2 = None
         try:
-            self.arm_interface_1 = ArmCtrl(proxy_ip = proxy_ip, adapter_name = adapter_name)
+            self._ArmCtrl = ArmCtrl(arm_name = adapter_name, host_ip = proxy_ip)
             if use_robotiq == True:
                 # self.gripper_interface_1 = GripperInterface(proxy_ip= proxy_ip, adapter_name = adapter_name, actuator_name = gripper_actuator_name,  client_name = gripper_client_name)
                 rospy.sleep(1)
@@ -122,10 +124,9 @@ class URTrajectoryFollower(object):
         self.T0 = time.time()
         self.robot = None
         self.arm_client = None
-        self.gripper_client = None
 
         self.__keep_running = True
-        self.__thread_client = threading.Thread(name = "arm_client", target = self.startclient, args = (self.arm_client, self.gripper_client))
+        self.__thread_client = threading.Thread(name = "arm_client", target = self.startclient)
         self.__thread_client.daemon = True
         self.__thread_client.start()
         rospy.sleep(2.0)
@@ -164,24 +165,21 @@ class URTrajectoryFollower(object):
             handler("[%s] %s" % (self.__class__.__name__, msg))
 
     def close(self):
-        if self.arm_is_moving == True:
-            self.arm_interface_1.rt_play_end()
-            self.arm_is_moving = False
+        self._ArmCtrl.rt_play_end()
         self.__thread_client.join()
-        self.__thread_state.join()
         del self.__thread_client
-        del self.__thread_state
 
     def __del__(self):
         self.close()
         self.loghandle("info","Closing servojs to robot")
 
-    def startclient(self, arm_client, gripper_client):
+    def startclient(self):
         # self.adapter_name
-        arm_client = actionlib.SimpleActionClient(self.adapter_name +'/scaled_pos_joint_traj_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
-        print ("Waiting for {}/follow_joint_trajectory server...".format(self.adapter_name))
+        print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        arm_client = actionlib.SimpleActionClient(self.adapter_name + '/scaled_pos_joint_traj_controller/follow_joint_trajectory', FollowJointTrajectoryAction)
+        print ("Waiting for {}/scaled_pos_joint_traj_controller/follow_joint_trajectory server...".format(self.adapter_name))
         arm_client.wait_for_server()
-        print ("Connected to {}/follow_joint_trajectory server".format(self.adapter_name))
+        print ("Connected to {}/scaled_pos_joint_traj_controller/follow_joint_trajectory server".format(self.adapter_name))
 
     #driver
     def set_robot(self, robot):
@@ -228,7 +226,7 @@ class URTrajectoryFollower(object):
         print ("The action server for this driver has been started")
 
     def on_goal(self, goal_handle):
-        log("on_goal")
+        log("on_goal ++++++++++++++++++++++++++++++++++++++")
         
         # Checks that the robot is connected
         if not self.robot:
@@ -304,9 +302,9 @@ class URTrajectoryFollower(object):
             self.goal_handle = goal_handle
             self.traj = goal_handle.get_goal().trajectory
             self.goal_handle.set_accepted()
-            if self.arm_is_moving == False:
-                self.arm_is_moving = self.arm_interface_1.rt_play_start(self.RATE*1000)
-                self.arm_is_moving = True
+            self.last_point_sent = False
+            self._ArmCtrl.rt_play_start(self.RATE*1000)
+   
 
 
     def on_cancel(self, goal_handle):
@@ -328,9 +326,7 @@ class URTrajectoryFollower(object):
                 self.traj = JointTrajectory()
                 self.traj.joint_names = joint_names
                 self.traj.points = [point0, point1]
-                if self.arm_is_moving == True:
-                    self.arm_interface_1.rt_play_end()
-                    self.arm_is_moving = False
+                self._ArmCtrl.rt_play_end()
                 self.goal_handle.set_canceled()
                 self.goal_handle = None
         else:
@@ -343,43 +339,41 @@ class URTrajectoryFollower(object):
             if self.robot and self.traj:
                 now = time.time()
                 self.traj_t1 = now
-                if (now - self.traj_t0) <= self.traj.points[-1].time_from_start.to_sec():
-                    self.last_point_sent = False
-                    #sending intermediate points
-                    setpoint = self.sample_traj(self.traj, now - self.traj_t0)
-                    try:
-                        if self.arm_is_moving == True:
-                            self.arm_interface_1.rt_play_data(setpoint.positions)
-                    except socket.error:
-                        print ("send socket.error",socket.error)
-                elif not self.last_point_sent:
-                    # All intermediate points sent, sending last point to make sure we
-                    # reach the goal.
-                    # This should solve an issue where the robot does not reach the final
-                    # position and errors out due to not reaching the goal point.
-                    last_point = self.traj.points[-1]
-                    state = self.get_joint_states()
-                    if state is None:
-                        continue
-                    position_in_tol = self.within_tolerance(state.position, last_point.positions, self.joint_goal_tolerances)
-                    # Performing this check to try and catch our error condition.  We will always
-                    # send the last point just in case.
-                    if not position_in_tol:
-                        rospy.logwarn("Trajectory time exceeded and current robot state not at goal, last point required")
-                        rospy.logwarn("Current trajectory time: %s, last point time: %s" % \
-                                      (now - self.traj_t0, self.traj.points[-1].time_from_start.to_sec()))
-                        rospy.logwarn("Desired: %s\nactual: %s\n%s\nvelocity: %s\n" % \
-                                      (last_point.positions, state.position, self.rad2deg(state.position),state.velocity))
-                    setpoint = self.sample_traj(self.traj, self.traj.points[-1].time_from_start.to_sec())
-                    print ("setpoint 2",setpoint)
-                    try:
-                        print ("if not self.last_point_sent: \n if not position_in_tol: \n" ,setpoint.positions)
-                        if self.arm_is_moving == True:
-                            self.arm_interface_1.rt_play_data(setpoint.positions)
-                        self.last_point_sent = True
-                    except socket.error:
-                        raise ("last_point_sent has socket error",socket.error)
-
+                if not self.last_point_sent:
+                    if (now - self.traj_t0) <= self.traj.points[-1].time_from_start.to_sec():
+                        self.last_point_sent = False
+                        #sending intermediate points
+                        setpoint = self.sample_traj(self.traj, now - self.traj_t0)
+                        try:
+                            self._ArmCtrl.rt_play_data(setpoint.positions)
+                        except socket.error:
+                            print ("send socket.error",socket.error)
+                    else:
+                        # All intermediate points sent, sending last point to make sure we
+                        # reach the goal.
+                        # This should solve an issue where the robot does not reach the final
+                        # position and errors out due to not reaching the goal point.
+                        last_point = self.traj.points[-1]
+                        state = self.get_joint_states()
+                        if state is None:
+                            continue
+                        position_in_tol = self.within_tolerance(state.position, last_point.positions, self.joint_goal_tolerances)
+                        # Performing this check to try and catch our error condition.  We will always
+                        # send the last point just in case.
+                        if not position_in_tol:
+                            rospy.logwarn("Trajectory time exceeded and current robot state not at goal, last point required")
+                            rospy.logwarn("Current trajectory time: %s, last point time: %s" % \
+                                        (now - self.traj_t0, self.traj.points[-1].time_from_start.to_sec()))
+                            rospy.logwarn("Desired: %s\nactual: %s\n%s\nvelocity: %s\n" % \
+                                        (last_point.positions, state.position, self.rad2deg(state.position),state.velocity))
+                        setpoint = self.sample_traj(self.traj, self.traj.points[-1].time_from_start.to_sec())
+                        print ("setpoint 2",setpoint)
+                        try:
+                            print ("+++++++++++ if not self.last_point_sent: \n if not position_in_tol: \n" ,setpoint.positions)
+                            self._ArmCtrl.rt_play_data(setpoint.positions)
+                            self.last_point_sent = True
+                        except socket.error:
+                            raise ("last_point_sent has socket error",socket.error)
                 else:  # Off the end
                     if self.goal_handle:
                         last_point = self.traj.points[-1]
@@ -388,57 +382,54 @@ class URTrajectoryFollower(object):
                             continue
                         position_in_tol = self.within_tolerance(state.position[:5], last_point.positions, [0.05]*6)
                         velocity_in_tol = self.within_tolerance(state.velocity, last_point.velocities, [0.05]*6)
-                        if position_in_tol and velocity_in_tol:
-                            if self.arm_is_moving == True:
-                                self.arm_interface_1.rt_play_end()
-                                self.arm_is_moving = False
-                            # The arm reached the goal (and isn't moving).  Succeeding
-                            self.goal_handle.set_succeeded()
-                            # self.traj = None
-                            self.goal_handle = None
+
                         if now - (self.traj_t0 + last_point.time_from_start.to_sec()) > self.goal_time_tolerance:
                             # Took too long to reach the goal.  Aborting
                             rospy.logwarn("Took too long to reach the goal.\nDesired: %s\nactual: %s\n%s\nvelocity: %s" % \
                                              (last_point.positions, state.position, self.rad2deg(state.position), state.velocity))
-                            if self.arm_is_moving == True:
-                                self.arm_interface_1.rt_play_end()
-                                self.arm_is_moving = False
+                            self._ArmCtrl.rt_play_end()
                             self.goal_handle.set_aborted(text="Took too long to reach the goal")
-                            #    self.traj = None
                             self.goal_handle = None
+                            print("+++++ goal set_aborted!")
+                        # if position_in_tol and velocity_in_tol:
+                        else:
+                            self._ArmCtrl.rt_play_end()
+                            # The arm reached the goal (and isn't moving).  Succeeding
+                            self.goal_handle.set_succeeded()
+                            self.goal_handle = None
+                            print("+++++ goal succeeded!")
                             
     def _update(self,event):
         #200ms tolerence
         poseinfo_tolerence_period = 0.2
-        if not rospy.is_shutdown() and self.arm_interface_1:
+        if not rospy.is_shutdown() and self._ArmCtrl:
             # print "_update",time.time()
             # rospy.sleep(self.RATE)
-            poseinfo = self.arm_interface_1.get_poseinfo()
+            [ret, joint, timestamp] = self._ArmCtrl.get_joints(with_timestamp=True)
             stamp = time.time()
-            if  abs(stamp - poseinfo.stamp) < poseinfo_tolerence_period:
+            if  abs(stamp - timestamp) < poseinfo_tolerence_period:
                 now = rospy.get_rostime()
                 msg = JointState()
                 msg.header.stamp = now
                 msg.header.frame_id = "From real-time state data"
                 msg.name = joint_names
-                msg.position = [0.0]*7
-                for i, q in enumerate(poseinfo.current_pose[:6]):
+                msg.position = [0.0]*6
+                for i, q in enumerate(joint[:6]):
                     msg.position[i] = q + joint_offsets.get(joint_names[i], 0.0)
-                msg.position[6] = 0.2*255
-                msg.velocity = poseinfo.velocity
+                msg.velocity = [0.0]*6
                 msg.effort = [0.0]*6
                 pub_joint_states.publish(msg)
                 self.set_joint_states(msg)
                 # print "last_joint_states", msg
-                self.tcp_force = poseinfo.tcp_force
+                tcp_force = [0.0]*6
                 wrench_msg = WrenchStamped()
                 wrench_msg.header.stamp = now
-                wrench_msg.wrench.force.x = self.tcp_force[0]
-                wrench_msg.wrench.force.y = self.tcp_force[1]
-                wrench_msg.wrench.force.z = self.tcp_force[2]
-                wrench_msg.wrench.torque.x = self.tcp_force[3]
-                wrench_msg.wrench.torque.y = self.tcp_force[4]
-                wrench_msg.wrench.torque.z = self.tcp_force[5]
+                wrench_msg.wrench.force.x = tcp_force[0]
+                wrench_msg.wrench.force.y = tcp_force[1]
+                wrench_msg.wrench.force.z = tcp_force[2]
+                wrench_msg.wrench.torque.x = tcp_force[3]
+                wrench_msg.wrench.torque.y = tcp_force[4]
+                wrench_msg.wrench.torque.z = tcp_force[5]
                 pub_wrench.publish(wrench_msg)
             else:
                 if not self.state_deadline_1:
@@ -456,7 +447,7 @@ class URTrajectoryFollower(object):
                     msg.velocity = [0.0]*6
                     msg.effort = [0.0]*6
                     pub_joint_states.publish(msg)
-                    self.tcp_force = [0.0]*6
+                    tcp_force = [0.0]*6
                     wrench_msg = WrenchStamped()
                     wrench_msg.header.stamp = rospy.get_rostime()
                     wrench_msg.wrench.force.x = self.tcp_force[0]
@@ -469,12 +460,9 @@ class URTrajectoryFollower(object):
                     self.state_deadline_1 = time.time()
                     self.state_deadline_2 = time.time()
                     print ("2222222222")
-                    # ret = self.arm_interface_1.start_topic()
+                    # ret = self._ArmCtrl.start_topic()
                     # print "ret",ret
                        
-
-
-
     # Returns the last JointState message sent out
     def get_joint_states(self):
         with self.joint_lock:
@@ -550,6 +538,7 @@ class URTrajectoryFollower(object):
     # 添加robot偏移量
     # joint_names: list of joints
     # returns: { "joint_name" : joint_offset }
+    # shoulder
     def load_joint_offsets(self, joint_names):
         from lxml import etree
         robot_description = rospy.get_param("robot_description")
@@ -600,6 +589,7 @@ class URTrajectoryFollower(object):
     def has_limited_velocities(self, traj):
         for p in traj.points:
             for v in p.velocities:
+                print("++++++++++++++++ v:",v)
                 if math.fabs(v) > max_velocity:
                     return False
         return True
@@ -616,6 +606,29 @@ class URTrajectoryFollower(object):
                 return False
         return True
 
+# joint_names: list of joints
+#
+# returns: { "joint_name" : joint_offset }
+def load_joint_offsets(joint_names):
+    from lxml import etree
+    robot_description = rospy.get_param("robot_description")
+    doc = etree.fromstring(robot_description)
+
+    # select only 'calibration_offset' elements whose parent is a joint
+    # element with a specific value for the name attribute
+    expr = "/robot/joint[@name=$name]/calibration_offset"
+    result = {}
+    for joint in joint_names:
+        joint_elt = doc.xpath(expr, name=joint)
+        if len(joint_elt) == 1:
+            calibration_offset = float(joint_elt[0].get("value"))
+            result[joint] = calibration_offset
+            rospy.loginfo("Found calibration offset for joint \"%s\": %.4f" % (joint, calibration_offset))
+        elif len(joint_elt) > 1:
+            rospy.logerr("Too many joints matched on \"%s\". Please report to package maintainer(s)." % joint)
+        else:
+            rospy.logwarn("No calibration offset for joint \"%s\"" % joint)
+    return result
 
 def main():
     roscpp_initialize(sys.argv)
@@ -636,7 +649,8 @@ def main():
     print ("joint_names",joint_names)
     # Reads the calibrated joint offsets from the URDF
     global joint_offsets
-    joint_offsets = {} #load_joint_offsets(joint_names)
+    joint_offsets = {"shoulder_pan_joint":0.0,"shoulder_lift_joint": 0.0,"elbow_joint":0.0,
+    "wrist_1_joint":0.0,"wrist_2_joint":0.0,"wrist_3_joint":0.0 } #load_joint_offsets(joint_names)
     print ("joint_offsets", joint_offsets)
 
     if len(joint_offsets) > 0:
@@ -655,7 +669,6 @@ def main():
     global max_payload
     max_payload = rospy.get_param("~max_payload", MAX_PAYLOAD)
     rospy.loginfo("Bounds for Payload: [%s, %s]" % (min_payload, max_payload))
-    #        (self, proxy_ip, adapter_name, arm_actuator_name, gripper_acturator_name, arm_client_name, gripper_client_name,  goal_time_tolerance=None, logger=False, use_rt = True, use_robotiq = True):
     robot = URTrajectoryFollower(proxy_ip=proxy_ip, adapter_name=adapter_name, goal_time_tolerance =4.0)
 
     robot.set_robot(robot=robot)

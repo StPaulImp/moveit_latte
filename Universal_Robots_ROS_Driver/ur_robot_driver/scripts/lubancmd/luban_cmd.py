@@ -124,12 +124,20 @@ class ArmCtrl:
         self.arm_isMoving = False
 
     def get_pose(self, with_timestamp=False):
-        ret, pose = self.arm_interface_.get_cur_pose(with_timestamp)
-        return ret, np.array(pose)
+        if with_timestamp == True:
+            ret, pose, timestamp = self.arm_interface_.get_cur_pose(with_timestamp)
+            return ret, pose, timestamp
+        else:
+            ret, pose = self.arm_interface_.get_cur_pose(with_timestamp)
+            return ret, pose
 
     def get_joints(self, with_timestamp=False):
-        ret, joint = self.arm_interface_.get_cur_joint(with_timestamp)
-        return ret, np.array(joint)
+        if with_timestamp == True:
+            ret, joint, timestamp = self.arm_interface_.get_cur_joint(with_timestamp)
+            return ret, joint, timestamp
+        else:
+            ret, joint = self.arm_interface_.get_cur_joint(with_timestamp)
+            return ret, joint
 
     def movels(self, pose_list, a=0.01, v=0.01, radius=0.01, t=0):
         pose = [0, 0, 0, 0, 0, 0]
@@ -272,12 +280,14 @@ class ArmCtrl:
         return serial_number
 
     def rt_play_start(self, sample_time_ms):
+        ret = 0
         if self.arm_isMoving == False:
             ret = self.arm_interface_.rt_play_start(sample_time_ms)
             self.arm_isMoving = True
         return ret
 
     def rt_play_end(self):
+        ret = 0
         if self.arm_isMoving == True:
             ret = self.arm_interface_.rt_play_end()
             self.arm_isMoving = False
